@@ -61,10 +61,11 @@
     }, 0);
   };
 
-  const lockMobileScroll = () => {
+  const lockMobileScroll = (position = window.scrollY) => {
     if (!mobileViewport.matches || root.classList.contains("is-section-scroll-locked")) return;
 
-    mobileLockedScrollPosition = window.scrollY;
+    const maximum = Math.max(0, root.scrollHeight - window.innerHeight);
+    mobileLockedScrollPosition = Math.min(Math.max(0, position), maximum);
     root.style.setProperty("--section-scroll-lock-offset", `${-mobileLockedScrollPosition}px`);
     root.classList.add("is-section-scroll-locked");
   };
@@ -98,7 +99,14 @@
     }
 
     finishCurrentTransition();
-    lockMobileScroll();
+
+    // On real iOS Safari, scrollTo() may still be settling native momentum
+    // when the next line runs. Locking at window.scrollY would then freeze an
+    // empty in-between position. Pin the document to the exact chapter start
+    // instead, which is stable even while Safari finishes the gesture.
+    const targetPosition = mobileViewport.matches ? sectionSnapPosition(section) : window.scrollY;
+    if (mobileViewport.matches) window.scrollTo({ top: targetPosition, behavior: "auto" });
+    lockMobileScroll(targetPosition);
     transitioningSection = section;
     section.classList.remove("is-revealed");
     title.textContent = labels.get(section.id) || section.id;
