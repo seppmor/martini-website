@@ -12,6 +12,9 @@ main:
     - src: /assets/easter-egg/erster-gemeinsamer-urlaub.jpg
       alt: Luca und Caro bei ihrem ersten gemeinsamen Urlaub
       caption: Unser erster gemeinsamer Urlaub
+    - src: /assets/easter-egg/erster-urlaub-familie-plescher.jpg
+      alt: Luca trägt Caro im Urlaub mit Familie Plescher am Strand auf den Schultern
+      caption: Unser erster gemeinsamer Urlaub mit Familie Plescher
     - src: /assets/easter-egg/der-antrag-2025-09-12.jpg
       alt: Luca und Caro unmittelbar nach dem Heiratsantrag
       caption: 12.09.2025 – Der Antrag
