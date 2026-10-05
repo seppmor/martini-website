@@ -21,7 +21,7 @@ main:
   summaryLabel: "Kurz gesagt:"
   summary: Lieber etwas schicker als zu casual, aber bitte so, dass Ihr Euch den ganzen Abend wohlfühlt.
   colorsLabel: "Farben:"
-  colors: Weiß und Rot lassen wir an diesem Tag aus.
+  colors: Bei Kleidern und Anzügen freuen wir uns über Farben jenseits von Weiß und Rot. Weiße Hemden sind natürlich vollkommen in Ordnung.
   excludedColors:
     - name: Weiß nicht tragen
       className: is-white
