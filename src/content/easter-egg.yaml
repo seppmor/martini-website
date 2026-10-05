@@ -15,6 +15,9 @@ main:
     - src: /assets/easter-egg/der-antrag-2025-09-12.jpg
       alt: Luca und Caro unmittelbar nach dem Heiratsantrag
       caption: 12.09.2025 – Der Antrag
+    - src: /assets/easter-egg/erstes-gemeinsames-bauprojekt.jpg
+      alt: Luca und Caro neben ihrem gemeinsam gebauten Schneemann
+      caption: Unser erstes gemeinsames Bauprojekt
     - src: /og.jpg
       alt: Einladung zur Martini Era
       caption: Der Anfang unserer Martini Era
