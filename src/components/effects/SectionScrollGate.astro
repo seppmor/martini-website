@@ -9,6 +9,7 @@
     const wheelIdleReset = 800;
     const transitionLock = reduceMotion.matches ? 250 : 1300;
     const touchMomentumSettle = 420;
+    const touchMomentumGuardDuration = 900;
 
     let wheelDistance = 0;
     let wheelDirection = 0;
@@ -26,6 +27,9 @@
     let touchStoppedAtBoundary = false;
     let activeTouchCount = 0;
     let activeSectionIndex = 0;
+    let momentumGuardSection: HTMLElement | undefined;
+    let momentumGuardDirection = 0;
+    let momentumGuardTimer = 0;
 
     const root = document.documentElement;
     const isScrollLocked = () => root.classList.contains("is-section-scroll-locked");
@@ -84,12 +88,19 @@
       wheelDirection = 0;
     };
 
+    const stopMomentumGuard = () => {
+      window.clearTimeout(momentumGuardTimer);
+      momentumGuardSection = undefined;
+      momentumGuardDirection = 0;
+    };
+
     const unlockScroll = () => {
       const restorePosition = lockedScrollPosition;
       root.classList.remove("is-section-scroll-locked");
       root.style.removeProperty("--section-scroll-lock-offset");
       window.scrollTo({ top: restorePosition, behavior: "auto" });
       lockedUntil = 0;
+      stopMomentumGuard();
     };
 
     const attemptUnlockScroll = () => {
@@ -104,22 +115,48 @@
       unlockScroll();
     };
 
-    const lockScrollAt = (position: number) => {
+    const lockScrollAt = (position: number, duration = transitionLock) => {
       lockedScrollPosition = clampScrollPosition(position);
-      lockedUntil = performance.now() + transitionLock;
+      lockedUntil = performance.now() + duration;
       root.style.setProperty(
         "--section-scroll-lock-offset",
         `${-lockedScrollPosition}px`,
       );
       root.classList.add("is-section-scroll-locked");
       window.clearTimeout(unlockTimer);
-      unlockTimer = window.setTimeout(attemptUnlockScroll, transitionLock);
+      unlockTimer = window.setTimeout(attemptUnlockScroll, duration);
+    };
+
+    const handleMomentumScroll = () => {
+      if (!momentumGuardSection || momentumGuardDirection === 0 || isScrollLocked()) return;
+
+      const boundaryPosition = holdPosition(momentumGuardSection, momentumGuardDirection);
+      const crossedBoundary = momentumGuardDirection > 0
+        ? window.scrollY >= boundaryPosition
+        : window.scrollY <= boundaryPosition;
+      if (!crossedBoundary) return;
+
+      stopMomentumGuard();
+      lockScrollAt(boundaryPosition, touchMomentumSettle);
+    };
+
+    const armMomentumGuard = (section: HTMLElement, direction: number) => {
+      stopMomentumGuard();
+      momentumGuardSection = section;
+      momentumGuardDirection = direction;
+    };
+
+    const startMomentumGuard = (section: HTMLElement, direction: number) => {
+      armMomentumGuard(section, direction);
+      momentumGuardTimer = window.setTimeout(stopMomentumGuard, touchMomentumGuardDuration);
+      handleMomentumScroll();
     };
 
     const moveToSection = (index: number) => {
       const target = sections[index];
       if (!target) return;
 
+      stopMomentumGuard();
       activeSectionIndex = index;
       const targetPosition = sectionSnapPosition(target);
       resetWheelIntent();
@@ -184,6 +221,7 @@
     const touchThreshold = () => Math.min(84, Math.max(56, window.innerHeight * 0.08));
 
     const handleTouchStart = (event: TouchEvent) => {
+      stopMomentumGuard();
       activeTouchCount = event.touches.length;
       const touch = event.touches[0];
       if (!touch) return;
@@ -225,6 +263,8 @@
         touchDirection = direction;
         touchStartedAtBoundary = currentSection ? isAtBoundary(currentSection, direction) : false;
         touchStoppedAtBoundary = false;
+        if (currentSection && !touchStartedAtBoundary) armMomentumGuard(currentSection, direction);
+        else stopMomentumGuard();
       }
 
       if (!currentSection || targetIndex < 0 || targetIndex >= sections.length || !isAtBoundary(currentSection, direction)) {
@@ -239,7 +279,7 @@
       if (!touchStartedAtBoundary) {
         touchStoppedAtBoundary = true;
         touchDistance = 0;
-        window.scrollTo({ top: holdPosition(currentSection, direction), behavior: "auto" });
+        lockScrollAt(holdPosition(currentSection, direction), touchMomentumSettle);
         return;
       }
 
@@ -266,18 +306,22 @@
       }
 
       const direction = touchDirection;
+      const startedAtBoundary = touchStartedAtBoundary;
       const stoppedAtBoundary = touchStoppedAtBoundary;
       const currentSection = sections[activeSectionIndex];
       resetTouchIntent();
 
-      if (!stoppedAtBoundary || !currentSection || direction === 0) return;
+      if (!currentSection || direction === 0 || startedAtBoundary) return;
 
-      // Keep Safari's trailing touch momentum from carrying the page into the
-      // following section after the gesture has already been stopped.
-      const boundaryPosition = holdPosition(currentSection, direction);
-      window.requestAnimationFrame(() => {
-        window.scrollTo({ top: boundaryPosition, behavior: "auto" });
-      });
+      if (stoppedAtBoundary) {
+        lockScrollAt(holdPosition(currentSection, direction), touchMomentumSettle);
+        return;
+      }
+
+      // Real iOS Safari can apply momentum only after touchend. Guard the
+      // current section briefly and stop that trailing motion at its exact
+      // boundary instead of allowing it to skip the transition.
+      startMomentumGuard(currentSection, direction);
     };
 
     const handleSectionChangeRequest = (event: Event) => {
@@ -292,6 +336,7 @@
     window.addEventListener("touchmove", handleTouchMove, { passive: false, capture: true });
     window.addEventListener("touchend", handleTouchEnd, { passive: true });
     window.addEventListener("touchcancel", handleTouchEnd, { passive: true });
+    window.addEventListener("scroll", handleMomentumScroll, { passive: true });
     window.addEventListener("martini:section-change-request", handleSectionChangeRequest);
   }
 </script>
