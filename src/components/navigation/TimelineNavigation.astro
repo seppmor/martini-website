@@ -92,6 +92,10 @@ const { content, easterEggAriaLabel } = Astro.props;
   });
 
   const sectionAtAnchor = () => {
+    if (document.documentElement.classList.contains("is-mobile-section-mode")) {
+      return Array.from(sections).find((section) => section.classList.contains("is-mobile-active"));
+    }
+
     const anchor = window.innerHeight * 0.18;
     const containingSection = Array.from(sections).find((section) => {
       const bounds = section.getBoundingClientRect();
@@ -127,10 +131,21 @@ const { content, easterEggAriaLabel } = Astro.props;
     scheduleActiveUpdate();
   };
 
-  scheduleActiveUpdate();
+  const handleActiveSectionChange = (event: Event) => {
+    const sectionId = (event as CustomEvent<{ sectionId?: string }>).detail?.sectionId;
+    if (!sectionId) return;
+    setActiveLink(sectionId);
+    showMobileNavigation();
+  };
+
+  const initialHash = window.location.hash.slice(1);
+  if (initialHash && document.getElementById(initialHash)) setActiveLink(initialHash);
+  else scheduleActiveUpdate();
   window.addEventListener("scroll", handleScrollIntent, { passive: true });
   window.addEventListener("wheel", handleScrollIntent, { passive: true });
   window.addEventListener("touchmove", handleScrollIntent, { passive: true });
+  window.addEventListener("martini:section-scroll", () => showMobileNavigation());
+  window.addEventListener("martini:active-section-change", handleActiveSectionChange);
   window.addEventListener("resize", scheduleActiveUpdate, { passive: true });
   navigation?.addEventListener("focusin", () => showMobileNavigation(3000));
   navigation?.addEventListener("focusout", () => showMobileNavigation(700));

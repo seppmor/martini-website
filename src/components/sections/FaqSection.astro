@@ -4,9 +4,10 @@ import SectionHeading from "../ui/SectionHeading.astro";
 
 interface Props {
   content: CollectionEntry<"faq">["data"];
+  easterEggHint?: string;
 }
 
-const { content } = Astro.props;
+const { content, easterEggHint } = Astro.props;
 ---
 
 <section class="section-shell snap-section" id="faq" data-section-nav>
@@ -22,4 +23,12 @@ const { content } = Astro.props;
       ))
     }
   </div>
+  {
+    easterEggHint && (
+      <footer class="easter-egg-hint">
+        <span aria-hidden="true"></span>
+        <p>{easterEggHint}</p>
+      </footer>
+    )
+  }
 </section>

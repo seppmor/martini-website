@@ -69,11 +69,7 @@ const visibleNavigation = {
       {enabledSections.ablauf && <ScheduleSection content={schedule.data} event={event.data} />}
       {enabledSections["anreise-und-unterkunft"] && <TravelSection content={travel.data} />}
       {enabledSections.dresscode && <DresscodeSection content={dresscode.data} />}
-      {enabledSections.faq && <FaqSection content={faq.data} />}
-      <footer class="easter-egg-hint">
-        <span aria-hidden="true"></span>
-        <p>{easterEgg.data.hint}</p>
-      </footer>
+      {enabledSections.faq && <FaqSection content={faq.data} easterEggHint={easterEgg.data.hint} />}
     </main>
   </div>
 </BaseLayout>

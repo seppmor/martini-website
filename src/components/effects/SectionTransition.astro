@@ -20,49 +20,32 @@
   let overlayAnimation: Animation | undefined;
   let titleAnimation: Animation | undefined;
   let revealTimer = 0;
-  let mobileScrollTimer = 0;
+  let transitionEndTimer = 0;
   let mobileLockedScrollPosition: number | undefined;
   let mobileSectionIndex = 0;
+  let mobileTouchStartX = 0;
+  let mobileTouchStartY = 0;
+  let mobileTouchStartedAtTop = false;
+  let mobileTouchStartedAtBottom = false;
+  let mobileTouchTransitioned = false;
 
   const revealSection = (section: HTMLElement | undefined) => section?.classList.add("is-revealed");
-  const revealOnlySection = (section: HTMLElement | undefined) => {
-    if (!section) return;
-    sections.forEach((currentSection) => {
-      currentSection.classList.toggle("is-revealed", currentSection === section);
-    });
-  };
-
   const scrollPaddingTop = () => Number.parseFloat(getComputedStyle(root).scrollPaddingTop) || 0;
   const sectionSnapPosition = (section: HTMLElement) => {
     const top = section.getBoundingClientRect().top + window.scrollY - scrollPaddingTop();
     const maximum = Math.max(0, root.scrollHeight - window.innerHeight);
     return Math.min(Math.max(0, top), maximum);
   };
-  const snapToSection = (section: HTMLElement) => {
-    window.scrollTo({ top: sectionSnapPosition(section), behavior: "auto" });
-  };
-
-  const sectionAtAnchorIndex = () => {
-    const anchor = window.innerHeight * 0.22;
-    const containingIndex = sections.findIndex((section) => {
-      const bounds = section.getBoundingClientRect();
-      return bounds.top <= anchor && bounds.bottom > anchor;
-    });
-    if (containingIndex >= 0) return containingIndex;
-
-    return sections.reduce((closestIndex, section, index) => {
-      const bounds = section.getBoundingClientRect();
-      const distance = bounds.bottom < anchor ? anchor - bounds.bottom : bounds.top - anchor;
-      const closestBounds = sections[closestIndex].getBoundingClientRect();
-      const closestDistance = closestBounds.bottom < anchor
-        ? anchor - closestBounds.bottom
-        : closestBounds.top - anchor;
-      return distance < closestDistance ? index : closestIndex;
-    }, 0);
-  };
+  const isMobileSectionMode = () => root.classList.contains("is-mobile-section-mode");
 
   const lockMobileScroll = (position = window.scrollY) => {
     if (!mobileViewport.matches || root.classList.contains("is-section-scroll-locked")) return;
+
+    if (isMobileSectionMode()) {
+      mobileLockedScrollPosition = 0;
+      root.classList.add("is-section-scroll-locked");
+      return;
+    }
 
     const maximum = Math.max(0, root.scrollHeight - window.innerHeight);
     mobileLockedScrollPosition = Math.min(Math.max(0, position), maximum);
@@ -77,12 +60,14 @@
     mobileLockedScrollPosition = undefined;
     root.classList.remove("is-section-scroll-locked");
     root.style.removeProperty("--section-scroll-lock-offset");
+    if (isMobileSectionMode()) return;
     window.scrollTo({ top: restorePosition, behavior: "auto" });
   };
 
   const finishCurrentTransition = () => {
     window.clearTimeout(revealTimer);
-    revealOnlySection(transitioningSection);
+    window.clearTimeout(transitionEndTimer);
+    revealSection(transitioningSection);
     transitioningSection = undefined;
     overlayAnimation?.cancel();
     titleAnimation?.cancel();
@@ -104,8 +89,12 @@
     // when the next line runs. Locking at window.scrollY would then freeze an
     // empty in-between position. Pin the document to the exact chapter start
     // instead, which is stable even while Safari finishes the gesture.
-    const targetPosition = mobileViewport.matches ? sectionSnapPosition(section) : window.scrollY;
-    if (mobileViewport.matches) window.scrollTo({ top: targetPosition, behavior: "auto" });
+    const targetPosition = mobileViewport.matches && !isMobileSectionMode()
+      ? sectionSnapPosition(section)
+      : window.scrollY;
+    if (mobileViewport.matches && !isMobileSectionMode()) {
+      window.scrollTo({ top: targetPosition, behavior: "auto" });
+    }
     lockMobileScroll(targetPosition);
     transitioningSection = section;
     section.classList.remove("is-revealed");
@@ -137,10 +126,11 @@
       if (transitioningSection === section) revealSection(section);
     }, 850);
 
-    overlayAnimation.addEventListener("finish", () => {
+    const completeTransition = () => {
       if (transitioningSection !== section) return;
       window.clearTimeout(revealTimer);
-      revealOnlySection(section);
+      window.clearTimeout(transitionEndTimer);
+      revealSection(section);
       transitioningSection = undefined;
       overlay.classList.remove("is-active");
       overlayAnimation?.cancel();
@@ -148,7 +138,13 @@
       overlayAnimation = undefined;
       titleAnimation = undefined;
       unlockMobileScroll();
-    });
+    };
+
+    overlayAnimation.addEventListener("finish", completeTransition, { once: true });
+    // Mobile Safari can defer a Web Animations "finish" event while it is
+    // settling touch input. Never let that keep the page locked longer than
+    // the visible 950 ms transition.
+    transitionEndTimer = window.setTimeout(completeTransition, 1000);
   };
 
   const handleTransitionStart = (event: Event) => {
@@ -157,7 +153,7 @@
     if (!section || section === transitioningSection) return;
 
     if (reduceMotion.matches) {
-      revealOnlySection(section);
+      revealSection(section);
       return;
     }
     playTransition(section);
@@ -165,65 +161,108 @@
 
   window.addEventListener("martini:section-transition-start", handleTransitionStart);
 
-  const runMobileTransition = () => {
-    window.clearTimeout(mobileScrollTimer);
-    mobileScrollTimer = 0;
-    if (!mobileViewport.matches || transitioningSection || root.classList.contains("is-section-scroll-locked")) return;
-
-    const detectedIndex = sectionAtAnchorIndex();
-    if (detectedIndex === mobileSectionIndex) return;
-
-    // Even if a strong Safari flick crosses several snap points, advance only
-    // one chapter. This keeps navigation, hash and title transition in sync.
-    const direction = Math.sign(detectedIndex - mobileSectionIndex);
-    const targetIndex = Math.min(
-      sections.length - 1,
-      Math.max(0, mobileSectionIndex + direction),
-    );
+  const activateMobileSection = (targetIndex: number, animate = true) => {
     const target = sections[targetIndex];
-    if (!target) return;
+    if (!target || targetIndex < 0 || targetIndex >= sections.length) return;
 
     mobileSectionIndex = targetIndex;
-    snapToSection(target);
+    sections.forEach((section, index) => {
+      section.classList.toggle("is-mobile-active", index === targetIndex);
+    });
+    target.scrollTop = 0;
     window.history.replaceState(null, "", `#${target.id}`);
+    window.dispatchEvent(
+      new CustomEvent("martini:active-section-change", {
+        detail: { sectionId: target.id },
+      }),
+    );
 
-    if (reduceMotion.matches) revealOnlySection(target);
+    if (!animate || reduceMotion.matches) revealSection(target);
     else playTransition(target);
   };
 
-  const scheduleMobileTransition = () => {
-    if (!mobileViewport.matches || transitioningSection || root.classList.contains("is-section-scroll-locked")) return;
-    window.clearTimeout(mobileScrollTimer);
-    mobileScrollTimer = window.setTimeout(runMobileTransition, 140);
+  const resetMobileTouch = () => {
+    mobileTouchStartedAtTop = false;
+    mobileTouchStartedAtBottom = false;
+    mobileTouchTransitioned = false;
   };
+
+  const handleMobileTouchStart = (event: TouchEvent) => {
+    const activeSection = sections[mobileSectionIndex];
+    const touch = event.touches[0];
+    if (!activeSection || event.currentTarget !== activeSection || !touch) return;
+
+    mobileTouchStartX = touch.clientX;
+    mobileTouchStartY = touch.clientY;
+    mobileTouchStartedAtTop = activeSection.scrollTop <= 3;
+    mobileTouchStartedAtBottom = activeSection.scrollTop + activeSection.clientHeight >= activeSection.scrollHeight - 3;
+    mobileTouchTransitioned = false;
+    window.dispatchEvent(new CustomEvent("martini:section-scroll"));
+  };
+
+  const handleMobileTouchMove = (event: TouchEvent) => {
+    const activeSection = sections[mobileSectionIndex];
+    const touch = event.touches[0];
+    if (!activeSection || event.currentTarget !== activeSection || !touch) return;
+
+    window.dispatchEvent(new CustomEvent("martini:section-scroll"));
+
+    if (transitioningSection || root.classList.contains("is-section-scroll-locked")) {
+      event.preventDefault();
+      return;
+    }
+
+    const deltaX = mobileTouchStartX - touch.clientX;
+    const deltaY = mobileTouchStartY - touch.clientY;
+    if (Math.abs(deltaY) <= Math.abs(deltaX)) return;
+
+    const direction = Math.sign(deltaY);
+    const startedAtBoundary = direction > 0 ? mobileTouchStartedAtBottom : mobileTouchStartedAtTop;
+    if (!startedAtBoundary) return;
+
+    event.preventDefault();
+    if (mobileTouchTransitioned || Math.abs(deltaY) < 64) return;
+
+    const targetIndex = mobileSectionIndex + direction;
+    if (targetIndex < 0 || targetIndex >= sections.length) return;
+
+    mobileTouchTransitioned = true;
+    activateMobileSection(targetIndex);
+  };
+
+  const handleMobileTouchEnd = () => resetMobileTouch();
 
   const handleMobileSectionChangeRequest = (event: Event) => {
     if (!mobileViewport.matches) return;
 
     const sectionId = (event as CustomEvent<{ sectionId?: string }>).detail?.sectionId;
     const targetIndex = sections.findIndex((section) => section.id === sectionId);
-    const target = sections[targetIndex];
-    if (!target) return;
-
-    window.clearTimeout(mobileScrollTimer);
-    mobileSectionIndex = targetIndex;
-    snapToSection(target);
-    window.history.replaceState(null, "", `#${target.id}`);
-
-    if (reduceMotion.matches) revealOnlySection(target);
-    else playTransition(target);
+    if (targetIndex < 0) return;
+    activateMobileSection(targetIndex);
   };
 
   window.addEventListener("martini:section-change-request", handleMobileSectionChangeRequest);
 
-  if (reduceMotion.matches) {
-    sections.forEach(revealSection);
-  } else if (mobileViewport.matches) {
+  if (mobileViewport.matches) {
+    root.classList.add("is-mobile-section-mode");
     const hashIndex = sections.findIndex((section) => `#${section.id}` === window.location.hash);
-    mobileSectionIndex = hashIndex >= 0 ? hashIndex : sectionAtAnchorIndex();
-    revealOnlySection(sections[mobileSectionIndex]);
-    window.addEventListener("scroll", scheduleMobileTransition, { passive: true });
-    window.addEventListener("scrollend", runMobileTransition, { passive: true });
+    mobileSectionIndex = hashIndex >= 0 ? hashIndex : 0;
+    sections.forEach(revealSection);
+    activateMobileSection(mobileSectionIndex, false);
+
+    sections.forEach((section) => {
+      section.addEventListener("touchstart", handleMobileTouchStart, { passive: true });
+      section.addEventListener("touchmove", handleMobileTouchMove, { passive: false });
+      section.addEventListener("touchend", handleMobileTouchEnd, { passive: true });
+      section.addEventListener("touchcancel", handleMobileTouchEnd, { passive: true });
+      section.addEventListener(
+        "scroll",
+        () => window.dispatchEvent(new CustomEvent("martini:section-scroll")),
+        { passive: true },
+      );
+    });
+  } else if (reduceMotion.matches) {
+    sections.forEach(revealSection);
   } else if ("IntersectionObserver" in window) {
     // Desktop keeps the explicit wheel gate. This observer only prevents a
     // blank section if a browser moves the viewport without that gate.
