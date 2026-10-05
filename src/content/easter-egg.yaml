@@ -27,15 +27,3 @@ main:
     - src: /assets/easter-egg/der-antrag-2025-09-12.jpg
       alt: Luca und Caro unmittelbar nach dem Heiratsantrag
       caption: 12.09.2025 – Der Antrag
-    - src: /og.jpg
-      alt: Einladung zur Martini Era
-      caption: Der Anfang unserer Martini Era
-    - src: /assets/couple-line-portrait.png
-      alt: Illustriertes Hochzeitspaar
-      caption: Zwei Drinks, ein großes Ja
-    - src: /assets/villa-johannes-flintrop-strasse-72.jpg
-      alt: Villa an der Johannes-Flintrop-Straße in Mettmann
-      caption: Hier sagen wir Ja
-    - src: "https://commons.wikimedia.org/wiki/Special:FilePath/Schloss_Hackhausen_(Solingen).jpg?width=1200"
-      alt: Wasserschloss Hackhausen in Solingen
-      caption: Hier wird angestoßen
