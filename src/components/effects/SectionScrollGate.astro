@@ -1,9 +1,10 @@
 <script>
   const sections = Array.from(document.querySelectorAll<HTMLElement>("[data-section-nav]"));
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const mobileViewport = window.matchMedia("(max-width: 820px)");
 
   if (sections.length > 1) {
-    const boundaryTolerance = 120;
+    const boundaryTolerance = mobileViewport.matches ? 16 : 120;
     const wheelThreshold = 360;
     const wheelIdleReset = 800;
     const transitionLock = reduceMotion.matches ? 250 : 1300;
@@ -21,6 +22,8 @@
     let touchLastY = 0;
     let touchDistance = 0;
     let touchDirection = 0;
+    let touchStartedAtBoundary = false;
+    let touchStoppedAtBoundary = false;
     let activeTouchCount = 0;
     let activeSectionIndex = 0;
 
@@ -174,9 +177,11 @@
     const resetTouchIntent = () => {
       touchDistance = 0;
       touchDirection = 0;
+      touchStartedAtBoundary = false;
+      touchStoppedAtBoundary = false;
     };
 
-    const touchThreshold = () => Math.min(128, Math.max(96, window.innerHeight * 0.13));
+    const touchThreshold = () => Math.min(84, Math.max(56, window.innerHeight * 0.08));
 
     const handleTouchStart = (event: TouchEvent) => {
       activeTouchCount = event.touches.length;
@@ -211,25 +216,34 @@
       const direction = Math.sign(deltaY);
       if (direction === 0) return;
 
-      if (touchDirection !== direction) {
-        touchDistance = 0;
-        touchDirection = direction;
-      }
-
-      // Keep the complete vertical intent of the gesture. On touch devices the
-      // section boundary is often reached only during the last move event. If
-      // we started counting there, a second swipe would be required.
-      touchDistance += Math.abs(deltaY);
-
       const currentIndex = activeSectionIndex;
       const targetIndex = currentIndex + direction;
       const currentSection = sections[currentIndex];
+
+      if (touchDirection !== direction) {
+        touchDistance = 0;
+        touchDirection = direction;
+        touchStartedAtBoundary = currentSection ? isAtBoundary(currentSection, direction) : false;
+        touchStoppedAtBoundary = false;
+      }
 
       if (!currentSection || targetIndex < 0 || targetIndex >= sections.length || !isAtBoundary(currentSection, direction)) {
         return;
       }
 
       event.preventDefault();
+
+      // Reaching the end during a normal content swipe stops at the exact
+      // section boundary. A fresh gesture is required for the chapter change,
+      // so the last lines of long mobile sections cannot be skipped.
+      if (!touchStartedAtBoundary) {
+        touchStoppedAtBoundary = true;
+        touchDistance = 0;
+        window.scrollTo({ top: holdPosition(currentSection, direction), behavior: "auto" });
+        return;
+      }
+
+      touchDistance += Math.abs(deltaY);
       if (touchDistance >= touchThreshold()) moveToSection(targetIndex);
     };
 
@@ -252,30 +266,17 @@
       }
 
       const direction = touchDirection;
-      const distance = touchDistance;
+      const stoppedAtBoundary = touchStoppedAtBoundary;
+      const currentSection = sections[activeSectionIndex];
       resetTouchIntent();
 
-      if (direction === 0 || distance < touchThreshold()) return;
+      if (!stoppedAtBoundary || !currentSection || direction === 0) return;
 
-      // Safari can apply the final part of a swipe only after touchend. Check
-      // once more on the next painted frame and convert that boundary crossing
-      // into the same controlled transition used by wheel and navigation.
+      // Keep Safari's trailing touch momentum from carrying the page into the
+      // following section after the gesture has already been stopped.
+      const boundaryPosition = holdPosition(currentSection, direction);
       window.requestAnimationFrame(() => {
-        window.requestAnimationFrame(() => {
-          if (isScrollLocked()) return;
-
-          const currentIndex = activeSectionIndex;
-          const targetIndex = currentIndex + direction;
-          const currentSection = sections[currentIndex];
-          if (
-            !currentSection ||
-            targetIndex < 0 ||
-            targetIndex >= sections.length ||
-            !isAtBoundary(currentSection, direction)
-          ) return;
-
-          moveToSection(targetIndex);
-        });
+        window.scrollTo({ top: boundaryPosition, behavior: "auto" });
       });
     };
 
