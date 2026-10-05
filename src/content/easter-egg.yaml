@@ -6,6 +6,9 @@ main:
   galleryAriaLabel: Geheime Bildergalerie
   closeLabel: Geheime Galerie schließen
   images:
+    - src: /assets/easter-egg/erstes-gemeinsames-selfie.jpg
+      alt: Luca und Caro bei ihrem ersten gemeinsamen Selfie
+      caption: Unser erstes gemeinsames Selfie
     - src: /og.jpg
       alt: Einladung zur Martini Era
       caption: Der Anfang unserer Martini Era
