@@ -6,11 +6,12 @@ Fuer die aktuelle Anforderung ist eine statische oder statisch gerenderte Websei
 
 Konkrete Infrastruktur-Empfehlung fuer den aktuellen Use Case: Cloudflare Pages Free mit Git-Integration fuer das Hosting und eine separat gekaufte eigene Domain. Erwartete laufende Kosten: Hosting 0 EUR, Domain je nach Anbieter und Endung typischerweise wenige Euro bis niedriger zweistelliger Betrag pro Jahr. Vor dem Kauf immer den Verlaengerungspreis pruefen, nicht nur den Aktionspreis im ersten Jahr.
 
-Vorgeschlagener technischer Default, noch nicht final entschieden:
+Entschiedener technischer Aufbau:
 
-- Vite oder ein Cloudflare-kompatibler React-Starter.
-- TypeScript nur dort, wo es die Wartbarkeit konkret verbessert.
-- Inhalte als einfache Datenmodule, JSON oder Markdown/MDX, je nachdem was fuer dieses Projekt am verstaendlichsten bleibt.
+- Astro mit statischer Ausgabe und TypeScript.
+- Sichtbare Seitenbereiche als eigenstaendige Astro-Komponenten.
+- Inhalte als validierte YAML-Dateien ausserhalb der Komponenten.
+- Gemeinsame Veranstaltungsdaten werden zentral gehalten und per Props an Komponenten uebergeben.
 - Kein CMS und keine Content-Plattform.
 - CSS Custom Properties oder Design Tokens fuer spaetere Designintegration.
 - Deployment ueber Git-Integration: Push erzeugt automatisch ein Deployment.
@@ -131,9 +132,6 @@ Vorschlag fuer die spaetere Entwicklung:
 
 ## Noch zu entscheiden
 
-- Primaerer Host: Empfehlung Cloudflare Pages Free mit Git-Integration; Alternative Netlify Free.
-- Domainname und Registrar.
-- GitHub oder GitLab als Repository fuer automatische Deployments.
 - Oeffentlichkeit: komplett oeffentlich, schwer erratbare URL oder Passwortschutz.
 - Ob spaeter interaktive Features mit Datenspeicherung hinzukommen.
 

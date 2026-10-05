@@ -9,11 +9,11 @@
 
 ## Phase 2: Technisches Fundament
 
-- Framework und Build-Tool festlegen.
-- Projektstruktur erstellen.
-- Inhaltsmodell definieren.
-- Lokalen Entwicklungsserver einrichten.
-- Ersten deploybaren Stand herstellen.
+- [x] Astro und statischen Build festlegen.
+- [x] Komponentenorientierte Projektstruktur erstellen.
+- [x] Validiertes YAML-Inhaltsmodell definieren.
+- [x] Lokalen Entwicklungsserver einrichten.
+- [x] Ersten deploybaren Build herstellen.
 
 ## Phase 3: Informationsarchitektur
 
@@ -24,10 +24,10 @@
 
 ## Phase 4: Komponenten
 
-- Startbereich bauen.
-- Ablauf-Komponente bauen.
-- FAQ-Komponente bauen.
-- Location-/Anfahrt-Komponente bauen.
+- [x] Startbereich als Komponente migrieren.
+- [x] Ablauf-Komponente migrieren.
+- [x] FAQ-Komponente migrieren.
+- [x] Location-/Anfahrt-Komponente migrieren.
 - Story-/Timeline-Komponente bauen.
 - Footer und optionale Zusatzlinks vorbereiten.
 

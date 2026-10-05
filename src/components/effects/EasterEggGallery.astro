@@ -1,0 +1,139 @@
+---
+import type { CollectionEntry } from "astro:content";
+
+interface Props {
+  content: CollectionEntry<"easterEgg">["data"];
+}
+
+const { content } = Astro.props;
+---
+
+<div class="easter-egg" data-easter-egg hidden aria-hidden="true">
+  <div class="easter-egg-break-scene" aria-hidden="true">
+    <span class="easter-egg-glass-whole"></span>
+    <span class="easter-egg-glass-shard is-one"></span>
+    <span class="easter-egg-glass-shard is-two"></span>
+    <span class="easter-egg-glass-shard is-three"></span>
+    <span class="easter-egg-glass-shard is-four"></span>
+  </div>
+
+  <section
+    class="easter-egg-page"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="easter-egg-title"
+    tabindex="-1"
+  >
+    <button class="easter-egg-close" type="button" aria-label={content.closeLabel}>×</button>
+    <header class="easter-egg-heading">
+      <p>{content.eyebrow}</p>
+      <h2 id="easter-egg-title">{content.title}</h2>
+      <span>{content.intro}</span>
+    </header>
+
+    <div class="easter-egg-gallery" aria-label={content.galleryAriaLabel}>
+      {
+        content.images.map((image, index) => (
+          <figure style={`--gallery-index: ${index}`}>
+            <img src={image.src} alt={image.alt} loading="lazy" decoding="async" />
+            <figcaption>{image.caption}</figcaption>
+          </figure>
+        ))
+      }
+    </div>
+  </section>
+</div>
+
+<script>
+  const easterEgg = document.querySelector<HTMLElement>("[data-easter-egg]");
+  const easterEggPage = easterEgg?.querySelector<HTMLElement>(".easter-egg-page");
+  const easterEggClose = easterEgg?.querySelector<HTMLButtonElement>(".easter-egg-close");
+  const easterEggTrigger = document.querySelector<HTMLButtonElement>("[data-easter-egg-trigger]");
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+  if (easterEgg && easterEggPage && easterEggClose && easterEggTrigger) {
+    const root = document.documentElement;
+    const openingDuration = reduceMotion.matches ? 420 : 1180;
+    const closingDuration = reduceMotion.matches ? 0 : 280;
+    let openTimer = 0;
+    let closeTimer = 0;
+    let lastTouchTime = 0;
+    let isOpening = false;
+
+    const lockPage = () => {
+      root.classList.add("is-easter-egg-open");
+    };
+
+    const unlockPage = () => {
+      root.classList.remove("is-easter-egg-open");
+    };
+
+    const openEasterEgg = () => {
+      if (isOpening || !easterEgg.hidden || root.classList.contains("is-section-scroll-locked")) return;
+
+      isOpening = true;
+      window.clearTimeout(closeTimer);
+      lockPage();
+      easterEgg.hidden = false;
+      easterEgg.setAttribute("aria-hidden", "false");
+      void easterEgg.offsetWidth;
+      window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(() => {
+          easterEgg.classList.add("is-opening");
+          window.clearTimeout(openTimer);
+          openTimer = window.setTimeout(() => {
+            easterEgg.classList.add("is-open");
+            easterEggPage.focus({ preventScroll: true });
+            isOpening = false;
+          }, openingDuration);
+        });
+      });
+    };
+
+    const closeEasterEgg = () => {
+      if (easterEgg.hidden) return;
+
+      window.clearTimeout(openTimer);
+      easterEgg.classList.remove("is-opening", "is-open");
+      easterEgg.classList.add("is-closing");
+      closeTimer = window.setTimeout(() => {
+        easterEgg.classList.remove("is-closing");
+        easterEgg.hidden = true;
+        easterEgg.setAttribute("aria-hidden", "true");
+        unlockPage();
+        easterEggTrigger.focus({ preventScroll: true });
+        isOpening = false;
+      }, closingDuration);
+    };
+
+    easterEggTrigger.addEventListener("dblclick", (event) => {
+      event.preventDefault();
+      openEasterEgg();
+    });
+
+    easterEggTrigger.addEventListener("pointerup", (event) => {
+      if (event.pointerType !== "touch") return;
+
+      const now = performance.now();
+      if (now - lastTouchTime <= 420) {
+        event.preventDefault();
+        lastTouchTime = 0;
+        openEasterEgg();
+        return;
+      }
+      lastTouchTime = now;
+    });
+
+    easterEggTrigger.addEventListener("click", (event) => {
+      if (event.detail === 0) openEasterEgg();
+    });
+
+    easterEggClose.addEventListener("click", closeEasterEgg);
+    easterEgg.addEventListener("click", (event) => {
+      if (event.target === easterEgg) closeEasterEgg();
+    });
+    window.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && !easterEgg.hidden) closeEasterEgg();
+    });
+  }
+</script>

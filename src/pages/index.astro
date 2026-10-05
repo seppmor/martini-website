@@ -1,0 +1,75 @@
+---
+import { getEntry } from "astro:content";
+import EasterEggGallery from "../components/effects/EasterEggGallery.astro";
+import SectionReveal from "../components/effects/SectionReveal.astro";
+import SectionScrollGate from "../components/effects/SectionScrollGate.astro";
+import SectionTransition from "../components/effects/SectionTransition.astro";
+import TimelineNavigation from "../components/navigation/TimelineNavigation.astro";
+import DresscodeSection from "../components/sections/DresscodeSection.astro";
+import FaqSection from "../components/sections/FaqSection.astro";
+import HeroSection from "../components/sections/HeroSection.astro";
+import LocationSection from "../components/sections/LocationSection.astro";
+import ScheduleSection from "../components/sections/ScheduleSection.astro";
+import TravelSection from "../components/sections/TravelSection.astro";
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const [site, event, hero, navigation, easterEgg, sectionVisibility, locations, schedule, travel, dresscode, faq] = await Promise.all([
+  getEntry("site", "main"),
+  getEntry("event", "main"),
+  getEntry("hero", "main"),
+  getEntry("navigation", "main"),
+  getEntry("easterEgg", "main"),
+  getEntry("sectionVisibility", "main"),
+  getEntry("locations", "main"),
+  getEntry("schedule", "main"),
+  getEntry("travel", "main"),
+  getEntry("dresscode", "main"),
+  getEntry("faq", "main"),
+]);
+
+if (!site || !event || !hero || !navigation || !easterEgg || !sectionVisibility || !locations || !schedule || !travel || !dresscode || !faq) {
+  throw new Error("Mindestens eine Inhaltsdatei der Startseite fehlt.");
+}
+
+const enabledSections = sectionVisibility.data.sections;
+const enabledSectionIds = new Set(
+  Object.entries(enabledSections)
+    .filter(([, enabled]) => enabled)
+    .map(([id]) => id),
+);
+
+if (enabledSectionIds.size === 0) {
+  throw new Error("In src/config/sections.yaml muss mindestens ein Bereich aktiviert sein.");
+}
+
+const visibleNavigation = {
+  ...navigation.data,
+  items: navigation.data.items.filter((item) => enabledSectionIds.has(item.id)),
+};
+---
+
+<BaseLayout
+  title={site.data.title}
+  description={site.data.description}
+  locale={site.data.locale}
+>
+  <EasterEggGallery content={easterEgg.data} />
+  <SectionReveal />
+  <SectionScrollGate />
+  <SectionTransition />
+  <div class="site-scroll-content">
+    <TimelineNavigation content={visibleNavigation} easterEggAriaLabel={easterEgg.data.triggerAriaLabel} />
+    <main
+      class="page-shell"
+      aria-labelledby={enabledSections.start ? "page-title" : undefined}
+      aria-label={!enabledSections.start ? site.data.title : undefined}
+    >
+      {enabledSections.start && <HeroSection content={hero.data} event={event.data} />}
+      {enabledSections["wann-und-wo"] && <LocationSection content={locations.data} event={event.data} />}
+      {enabledSections.ablauf && <ScheduleSection content={schedule.data} event={event.data} />}
+      {enabledSections["anreise-und-unterkunft"] && <TravelSection content={travel.data} />}
+      {enabledSections.dresscode && <DresscodeSection content={dresscode.data} />}
+      {enabledSections.faq && <FaqSection content={faq.data} />}
+    </main>
+  </div>
+</BaseLayout>

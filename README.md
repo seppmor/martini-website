@@ -1,8 +1,39 @@
-# Hochzeits-Webseite
+# Martini Era – Hochzeitswebsite
 
-Projekt fuer eine kleine, content-orientierte Hochzeits-Webseite. Die Seite soll per QR-Code erreichbar sein und Gaesten zentrale Informationen geben.
+Statisch generierte, mobile-first Hochzeitswebsite auf Basis von Astro und TypeScript.
 
-Aktueller Status: Planungs- und Infrastrukturphase.
+## Lokale Entwicklung
+
+```bash
+pnpm install
+pnpm dev
+```
+
+Der Produktions-Build wird mit `pnpm build` erzeugt und liegt anschließend in `dist/`.
+
+## Inhalte bearbeiten
+
+Die redaktionellen Inhalte liegen getrennt von den Komponenten in `src/content/*.yaml`:
+
+- `event.yaml`: gemeinsame Fakten wie Datum, Uhrzeiten, Orte und Routen
+- `site.yaml`: Titel, Beschreibung und Metadaten der Website
+- `hero.yaml`: Startbereich und Countdown-Texte
+- `locations.yaml`: Orte, Galerie und Kartenbereich
+- `schedule.yaml`: Tagesablauf
+- `travel.yaml`: Anreise und Unterkunft
+- `dresscode.yaml`: Dresscode
+- `faq.yaml`: Fragen und Antworten
+- `navigation.yaml`: Abschnittsnavigation
+
+Beim Build werden diese Dateien gegen die Schemata in `src/content.config.ts` geprüft. Sichtbare Bereiche liegen als eigenständige Komponenten unter `src/components/`.
+
+## Deployment
+
+Cloudflare Pages verwendet:
+
+- Build-Befehl: `pnpm build`
+- Ausgabeordner: `dist`
+- Produktionsbranch: `main`
 
 ## Projektunterlagen
 

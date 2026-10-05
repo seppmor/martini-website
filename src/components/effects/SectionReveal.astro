@@ -1,0 +1,39 @@
+<script>
+  const sections = Array.from(document.querySelectorAll<HTMLElement>("[data-section-nav]"));
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const revealSelector = [
+    ":scope > .hero-brand",
+    ":scope > .hero-grid > .hero-copy",
+    ":scope > .hero-grid > .hero-visual",
+    ":scope > .event-ledger",
+    ":scope > .section-heading",
+    ":scope > .event-location > *",
+    ":scope > .location-gallery > *",
+    ":scope > .map-card",
+    ":scope > .timing-note",
+    ":scope > .program-timeline > li",
+    ":scope > .info-grid > article",
+    ":scope > .dresscode-editorial > *",
+    ":scope > .faq-list > details",
+  ].join(",");
+
+  sections.forEach((section) => {
+    const items = section.querySelectorAll<HTMLElement>(revealSelector);
+    items.forEach((item, index) => {
+      item.classList.add("section-reveal-item");
+      item.style.setProperty("--reveal-order", String(Math.min(index, 7)));
+    });
+  });
+
+  if (reduceMotion.matches || !("IntersectionObserver" in window)) {
+    sections.forEach((section) => section.classList.add("is-revealed"));
+  } else {
+    const viewportEntry = sections.find((section) => {
+      const bounds = section.getBoundingClientRect();
+      return bounds.top < window.innerHeight * 0.72 && bounds.bottom > 0;
+    });
+    viewportEntry?.classList.add("is-revealed");
+  }
+
+  document.documentElement.classList.add("has-section-reveal");
+</script>

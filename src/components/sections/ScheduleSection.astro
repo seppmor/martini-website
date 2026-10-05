@@ -1,0 +1,36 @@
+---
+import type { CollectionEntry } from "astro:content";
+import SectionHeading from "../ui/SectionHeading.astro";
+
+interface Props {
+  content: CollectionEntry<"schedule">["data"];
+  event: CollectionEntry<"event">["data"];
+}
+
+const { content, event } = Astro.props;
+const places = {
+  ceremony: event.ceremony.address,
+  celebration: `${event.celebration.name}, ${event.celebration.address}`,
+};
+---
+
+<section class="section-shell snap-section" id="ablauf" data-section-nav>
+  <div class="section-silhouette" aria-hidden="true"></div>
+  <SectionHeading kicker={content.kicker} title={content.title} intro={content.intro} />
+
+  <ol class="program-timeline" aria-label={content.ariaLabel}>
+    {
+      content.items.map((item) => (
+        <li>
+          <time datetime={item.datetime}>{item.time}</time>
+          <span class="program-marker" aria-hidden="true"></span>
+          <div class="program-content">
+            <h3>{item.title}</h3>
+            <p>{item.description}</p>
+            {item.place && <span class="program-place">{places[item.place]}</span>}
+          </div>
+        </li>
+      ))
+    }
+  </ol>
+</section>

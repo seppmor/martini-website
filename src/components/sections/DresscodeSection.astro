@@ -1,0 +1,47 @@
+---
+import type { CollectionEntry } from "astro:content";
+import SectionHeading from "../ui/SectionHeading.astro";
+
+interface Props {
+  content: CollectionEntry<"dresscode">["data"];
+}
+
+const { content } = Astro.props;
+---
+
+<section class="section-shell dresscode-section snap-section" id="dresscode" data-section-nav>
+  <div class="section-silhouette" aria-hidden="true"></div>
+  <SectionHeading
+    kicker={content.kicker}
+    title={content.title}
+    intro={content.intro}
+    className="dresscode-heading"
+  />
+
+  <div class="dresscode-editorial">
+    <p class="dresscode-line">{content.editorialLine}</p>
+    <div class="dresscode-cues" aria-label={content.cuesLabel}>
+      {
+        content.cues.map((cue) => (
+          <article class:list={["dresscode-cue", { "is-target": cue.featured }]}>
+            <span>{cue.eyebrow}</span>
+            <h3>{cue.title}</h3>
+            <p>{cue.text}</p>
+          </article>
+        ))
+      }
+    </div>
+
+    <div class="dresscode-copy">
+      <p><strong>{content.summaryLabel}</strong> {content.summary}</p>
+      <p class="dresscode-colors">
+        <strong>{content.colorsLabel}</strong> {content.colors}
+        {
+          content.excludedColors.map((color) => (
+            <span class:list={["color-swatch", color.className]} aria-label={color.name}></span>
+          ))
+        }
+      </p>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,46 @@
+main:
+  kicker: 02 / Ablauf
+  title: Vom Ja-Wort bis zur Tanzfläche.
+  intro: >-
+    Vom Ankommen in Mettmann bis zur Party im Wasserschloss: hier findet Ihr
+    die wichtigsten Zeiten auf einen Blick.
+  ariaLabel: Tagesablauf am 17. Juli 2027
+  items:
+    - datetime: "2027-07-17T13:30:00+02:00"
+      time: ca. 13:30 Uhr
+      title: Ankunft der Gäste
+      description: Bitte kommt entspannt an, damit zur Trauung alle ihren Platz gefunden haben.
+      place: ceremony
+    - datetime: "2027-07-17T14:00:00+02:00"
+      time: ca. 14:00 Uhr
+      title: Trauung
+      description: Wir sagen Ja in Mettmann.
+      place: ceremony
+    - datetime: "2027-07-17T15:00:00+02:00"
+      time: ca. 15:00 Uhr
+      title: Erfrischung und Glückwünsche
+      description: Nach der Trauung stoßen wir gemeinsam an, genießen eine Erfrischung und freuen uns auf Eure Glückwünsche.
+    - datetime: "2027-07-17T16:30:00+02:00"
+      time: ca. 16:30 Uhr
+      title: Sektempfang
+      description: Wir kommen in der Location an und starten gemeinsam in die Feier.
+      place: celebration
+    - datetime: "2027-07-17T18:00:00+02:00"
+      time: ca. 18:00 Uhr
+      title: Hochzeitstorte
+      description: Ein süßer Moment für alle, bevor der Abend richtig Fahrt aufnimmt.
+    - datetime: "2027-07-17T19:30:00+02:00"
+      time: ca. 19:30 Uhr
+      title: Dinner
+      description: Gemeinsames Abendessen in der Location.
+    - datetime: "2027-07-17T21:00:00+02:00"
+      time: ca. 21:00 Uhr
+      title: Programm
+      description: Geplante Programmpunkte und kleine Überraschungen.
+    - datetime: "2027-07-17T22:00:00+02:00"
+      time: ca. 22:00 Uhr
+      title: Eröffnung der Party
+      description: Mit dem Hochzeitstanz starten wir offiziell in die Party.
+    - time: Open end
+      title: Abzappeln und feiern
+      description: "Danach bleibt nur noch: Musik, Tanzfläche und ein langer Abend mit Euch."

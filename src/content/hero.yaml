@@ -1,0 +1,31 @@
+main:
+  eyebrow: Save the date
+  subline: for the beginning of the
+  title: Martini Era
+  intro: >-
+    Unsere Hochzeitswebseite entsteht gerade. Bald findet Ihr hier alle
+    Informationen rund um den Tag, den Ablauf und die wichtigsten Hinweise für
+    unsere Gäste. Kommt also zukünftig gerne noch einmal wieder.
+  calendarButton: In den Kalender eintragen
+  calendarAriaLabel: Kalenderblocker für die Hochzeit herunterladen
+  quickLinksLabel: Schnelleinstieg
+  visualAriaLabel: Hochzeitsportrait und Countdown
+  countdownText: Zählt mit uns gemeinsam die Tage
+  countdownAriaLabel: Countdown bis zur Hochzeit
+  countdownUnits:
+    days: Tage
+    hours: Std.
+    minutes: Min.
+    seconds: Sek.
+  factsAriaLabel: Eckdaten
+  portraitAlt: Linienportrait des Brautpaares
+  ledger:
+    location:
+      - Trauung Mettmann
+      - Party Solingen
+    dresscode:
+      - Dresscode
+      - Schick / tanzbar
+    closing:
+      - IT WOULD BE
+      - OUR PLESCHER!

@@ -114,3 +114,10 @@ Dieses Log haelt technische und organisatorische Entscheidungen fest. Statuswert
 - Kontext: Der Dresscode-Abschnitt wirkte als dunkle gruene Sonderseite nicht mehr wie der Rest der aktuellen Designrichtung.
 - Entscheidung: Der Abschnitt wird wieder im hellen Creme-/Olive-/Gold-Stil gefuehrt. Die Skala von "zu leger" bis "festlich" wird durch drei lineare Orientierungspunkte ersetzt.
 - Konsequenz: Der Abschnitt bleibt naeher an den anderen Inhaltsseiten und erklaert die gewuenschte Kleidung ohne Slider- oder Leistenoptik.
+
+## D-017: Astro-Komponenten und externe Inhalte
+
+- Status: Entschieden
+- Kontext: Die bisherige Seite lag in einer grossen HTML-Datei. Inhaltsaenderungen und strukturelle Anpassungen konnten dadurch unbeabsichtigt andere Bereiche beeinflussen. Die meisten Gaeste werden die Seite mobil aufrufen.
+- Entscheidung: Die Seite wird mit Astro und TypeScript statisch erzeugt. Jeder sichtbare Bereich ist eine eigene Astro-Komponente. Redaktionelle Texte liegen in validierten YAML-Dateien; gemeinsame Fakten wie Datum, Uhrzeiten und Orte werden zentral gehalten und per Props uebergeben. JavaScript bleibt auf Countdown, Navigation und Lazy Loading begrenzt.
+- Konsequenz: Inhalte koennen ohne Eingriff in das Markup angepasst werden, Komponenten lassen sich getrennt weiterentwickeln und die mobile Seite laedt nur wenig clientseitiges JavaScript. Cloudflare Pages baut mit `pnpm build` in den Ausgabeordner `dist`.

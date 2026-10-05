@@ -1,0 +1,29 @@
+main:
+  kicker: 04 / Dresscode
+  title: Dresscode mit Luft zum Tanzen.
+  intro: >-
+    Wir wünschen uns eine schicke, festliche Garderobe, aber keinen Dresscode,
+    der zwickt. Ihr sollt Euch wohlfühlen und trotzdem etwas Besonderes aus dem
+    Schrank holen.
+  editorialLine: Ein bisschen Schloss, ein bisschen Sommerabend.
+  cuesLabel: Dresscode Orientierung
+  cues:
+    - eyebrow: Nicht der Plan
+      title: zu leger
+      text: Jeans, Jogginghose und Sportlook bleiben bitte zuhause.
+    - eyebrow: Unser Ziel
+      title: schick, sommerlich, tanzbar
+      text: Festlich genug für Schloss und Feier, bequem genug für den langen Abend.
+      featured: true
+    - eyebrow: Gern gesehen
+      title: festlich
+      text: Kleid, Jumpsuit, Anzug, Sakko, Hemd, Chino oder Stoffhose passen gut.
+  summaryLabel: "Kurz gesagt:"
+  summary: Lieber etwas schicker als zu casual, aber bitte so, dass Ihr Euch den ganzen Abend wohlfühlt.
+  colorsLabel: "Farben:"
+  colors: Weiß und Rot lassen wir an diesem Tag aus.
+  excludedColors:
+    - name: Weiß nicht tragen
+      className: is-white
+    - name: Rot nicht tragen
+      className: is-red

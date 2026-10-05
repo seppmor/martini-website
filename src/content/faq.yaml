@@ -1,0 +1,16 @@
+main:
+  kicker: 05 / FAQ
+  title: Kurze Antworten für später.
+  intro: >-
+    Sobald die ersten organisatorischen Details final sind, sammeln wir hier
+    Antworten zu Geschenken, Kindern, Fotos, Kontakt und allem, was vor dem Tag
+    wichtig ist.
+  items:
+    - question: Gibt es schon alle Informationen?
+      answer: Noch nicht. Die Webseite entsteht gerade und wird Schritt für Schritt ergänzt.
+    - question: Wo findet die Hochzeit statt?
+      answer: Die Trauung ist in Mettmann. Ab ca. 16:30 Uhr feiern wir im Wasserschloss Hackhausen in Solingen.
+    - question: Was ziehe ich an?
+      answer: Gerne schick und festlich, aber so, dass Ihr Euch wohlfühlt. Bitte keine Jeans, Jogginghose, Weiß oder Rot.
+    - question: Wann lohnt es sich wiederzukommen?
+      answer: Ablauf und Dresscode sind eingetragen. Details zu Anreise, Parken und Übernachtung folgen noch.

@@ -1,0 +1,9 @@
+main:
+  # true zeigt den Bereich an, false blendet ihn inklusive Navigation aus.
+  sections:
+    start: true
+    wann-und-wo: true
+    ablauf: true
+    anreise-und-unterkunft: true
+    dresscode: true
+    faq: true

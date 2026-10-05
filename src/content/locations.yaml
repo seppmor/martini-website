@@ -1,0 +1,29 @@
+main:
+  kicker: 01 / Wann und Wo?
+  title: Trauung in Mettmann, Feier im Wasserschloss.
+  intro: >-
+    Der Tag startet am Samstag, den 17. Juli 2027, mit der Ankunft zur Trauung
+    in Mettmann. Ab ca. 16:30 Uhr geht es im Wasserschloss Hackhausen in
+    Solingen weiter.
+  noteLabel: "Bitte beachten:"
+  note: >-
+    Alle Uhrzeiten sind ungefähre Angaben und noch nicht final. Schaut bitte
+    etwa vier Wochen vor der Hochzeit noch einmal auf dieser Webseite vorbei;
+    hier findet Ihr dann die finalen Zeiten.
+  ceremonyLabel: Trauung
+  celebrationLabel: Feier
+  orientationText: >-
+    Für die Orientierung könnt Ihr beide Orte direkt in Google Maps öffnen.
+    Hinweise zu Parken, ÖPNV und Übernachtung ergänzen wir noch.
+  ceremonyRouteLabel: Route zur Trauung
+  celebrationRouteLabel: Route zur Feier
+  galleryLabel: Bilder der Hochzeitsorte
+  gallery:
+    - src: /assets/villa-johannes-flintrop-strasse-72.jpg
+      alt: Villa an der Johannes-Flintrop-Straße 72
+      caption: Villa Johannes-Flintrop Straße 72
+    - src: "https://commons.wikimedia.org/wiki/Special:FilePath/Schloss_Hackhausen_(Solingen).jpg?width=1200"
+      alt: Wasserschloss Hackhausen in Solingen
+      caption: Wasserschloss Hackhausen
+  mapTitle: Google Maps Karte zum Wasserschloss Hackhausen
+  mapUrl: "https://www.google.com/maps?q=Wasserschloss%20Hackhausen%2C%20Hackhausen%201%2C%2042697%20Solingen&output=embed"

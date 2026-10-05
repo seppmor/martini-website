@@ -1,0 +1,296 @@
+<script>
+  const sections = Array.from(document.querySelectorAll<HTMLElement>("[data-section-nav]"));
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+  if (sections.length > 1) {
+    const boundaryTolerance = 120;
+    const wheelThreshold = 360;
+    const wheelIdleReset = 800;
+    const transitionLock = reduceMotion.matches ? 250 : 1300;
+    const touchMomentumSettle = 420;
+
+    let wheelDistance = 0;
+    let wheelDirection = 0;
+    let wheelResetTimer = 0;
+    let lockedUntil = 0;
+    let lockedScrollPosition = window.scrollY;
+    let unlockTimer = 0;
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchLastX = 0;
+    let touchLastY = 0;
+    let touchDistance = 0;
+    let touchDirection = 0;
+    let activeTouchCount = 0;
+    let activeSectionIndex = 0;
+
+    const root = document.documentElement;
+    const isScrollLocked = () => root.classList.contains("is-section-scroll-locked");
+
+    const sectionTop = (section: HTMLElement) => section.getBoundingClientRect().top + window.scrollY;
+    const scrollPaddingTop = () => Number.parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0;
+    const clampScrollPosition = (position: number) => {
+      const maximum = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+      return Math.min(Math.max(0, position), maximum);
+    };
+    const sectionSnapPosition = (section: HTMLElement) => clampScrollPosition(sectionTop(section) - scrollPaddingTop());
+
+    const currentSectionIndex = () => {
+      const anchor = window.innerHeight * 0.35;
+      const containingIndex = sections.findIndex((section) => {
+        const bounds = section.getBoundingClientRect();
+        return bounds.top <= anchor && bounds.bottom > anchor;
+      });
+
+      if (containingIndex >= 0) return containingIndex;
+
+      return sections.reduce((closestIndex, section, index) => {
+        const bounds = section.getBoundingClientRect();
+        const distance = bounds.bottom < anchor ? anchor - bounds.bottom : bounds.top - anchor;
+        const closestBounds = sections[closestIndex].getBoundingClientRect();
+        const closestDistance = closestBounds.bottom < anchor
+          ? anchor - closestBounds.bottom
+          : closestBounds.top - anchor;
+        return distance < closestDistance ? index : closestIndex;
+      }, 0);
+    };
+
+    const hashSectionIndex = sections.findIndex((section) => `#${section.id}` === window.location.hash);
+    activeSectionIndex = hashSectionIndex >= 0 ? hashSectionIndex : currentSectionIndex();
+
+    const holdPosition = (section: HTMLElement, direction: number) => {
+      const top = sectionTop(section);
+      const snapPosition = sectionSnapPosition(section);
+      if (direction < 0) return snapPosition;
+
+      const bottom = top + section.offsetHeight;
+      return clampScrollPosition(Math.max(snapPosition, bottom - window.innerHeight + scrollPaddingTop()));
+    };
+
+    const isAtBoundary = (section: HTMLElement, direction: number) => {
+      const holdY = holdPosition(section, direction);
+      const boundaryRange = boundaryTolerance + scrollPaddingTop();
+      return direction > 0
+        ? window.scrollY >= holdY - boundaryRange
+        : window.scrollY <= holdY + boundaryRange;
+    };
+
+    const resetWheelIntent = () => {
+      window.clearTimeout(wheelResetTimer);
+      wheelDistance = 0;
+      wheelDirection = 0;
+    };
+
+    const unlockScroll = () => {
+      const restorePosition = lockedScrollPosition;
+      root.classList.remove("is-section-scroll-locked");
+      root.style.removeProperty("--section-scroll-lock-offset");
+      window.scrollTo({ top: restorePosition, behavior: "auto" });
+      lockedUntil = 0;
+    };
+
+    const attemptUnlockScroll = () => {
+      const remainingLock = lockedUntil - performance.now();
+      if (remainingLock > 0) {
+        window.clearTimeout(unlockTimer);
+        unlockTimer = window.setTimeout(attemptUnlockScroll, remainingLock);
+        return;
+      }
+
+      if (activeTouchCount > 0) return;
+      unlockScroll();
+    };
+
+    const lockScrollAt = (position: number) => {
+      lockedScrollPosition = clampScrollPosition(position);
+      lockedUntil = performance.now() + transitionLock;
+      root.style.setProperty(
+        "--section-scroll-lock-offset",
+        `${-lockedScrollPosition}px`,
+      );
+      root.classList.add("is-section-scroll-locked");
+      window.clearTimeout(unlockTimer);
+      unlockTimer = window.setTimeout(attemptUnlockScroll, transitionLock);
+    };
+
+    const moveToSection = (index: number) => {
+      const target = sections[index];
+      if (!target) return;
+
+      activeSectionIndex = index;
+      const targetPosition = sectionSnapPosition(target);
+      resetWheelIntent();
+      touchDistance = 0;
+      touchDirection = 0;
+      window.scrollTo({ top: targetPosition, behavior: "auto" });
+      lockScrollAt(targetPosition);
+      window.history.replaceState(null, "", `#${target.id}`);
+      window.dispatchEvent(
+        new CustomEvent("martini:section-transition-start", {
+          detail: { sectionId: target.id },
+        }),
+      );
+    };
+
+    const normalizedWheelDistance = (event: WheelEvent) => {
+      if (event.deltaMode === WheelEvent.DOM_DELTA_LINE) return Math.abs(event.deltaY) * 16;
+      if (event.deltaMode === WheelEvent.DOM_DELTA_PAGE) return Math.abs(event.deltaY) * window.innerHeight;
+      return Math.abs(event.deltaY);
+    };
+
+    const handleWheel = (event: WheelEvent) => {
+      if (Math.abs(event.deltaY) <= Math.abs(event.deltaX) || event.deltaY === 0) return;
+
+      if (isScrollLocked()) {
+        event.preventDefault();
+        return;
+      }
+
+      const direction = Math.sign(event.deltaY);
+      const currentIndex = activeSectionIndex;
+      const targetIndex = currentIndex + direction;
+      const currentSection = sections[currentIndex];
+      const atBoundary = currentSection ? isAtBoundary(currentSection, direction) : false;
+
+      if (!currentSection || targetIndex < 0 || targetIndex >= sections.length || !atBoundary) {
+        resetWheelIntent();
+        return;
+      }
+
+      event.preventDefault();
+
+      if (wheelDirection !== direction) {
+        wheelDistance = 0;
+        wheelDirection = direction;
+      }
+
+      wheelDistance += normalizedWheelDistance(event);
+      window.clearTimeout(wheelResetTimer);
+      wheelResetTimer = window.setTimeout(resetWheelIntent, wheelIdleReset);
+
+      if (wheelDistance >= wheelThreshold) moveToSection(targetIndex);
+    };
+
+    const resetTouchIntent = () => {
+      touchDistance = 0;
+      touchDirection = 0;
+    };
+
+    const touchThreshold = () => Math.min(128, Math.max(96, window.innerHeight * 0.13));
+
+    const handleTouchStart = (event: TouchEvent) => {
+      activeTouchCount = event.touches.length;
+      const touch = event.touches[0];
+      if (!touch) return;
+
+      touchStartX = touch.clientX;
+      touchStartY = touch.clientY;
+      touchLastX = touch.clientX;
+      touchLastY = touch.clientY;
+      resetTouchIntent();
+    };
+
+    const handleTouchMove = (event: TouchEvent) => {
+      const touch = event.touches[0];
+      if (!touch) return;
+
+      const deltaX = touchLastX - touch.clientX;
+      const deltaY = touchLastY - touch.clientY;
+      touchLastX = touch.clientX;
+      touchLastY = touch.clientY;
+
+      const totalX = Math.abs(touchStartX - touch.clientX);
+      const totalY = Math.abs(touchStartY - touch.clientY);
+      if (totalX > totalY || Math.abs(deltaY) <= Math.abs(deltaX)) return;
+
+      if (isScrollLocked()) {
+        event.preventDefault();
+        return;
+      }
+
+      const direction = Math.sign(deltaY);
+      if (direction === 0) return;
+
+      if (touchDirection !== direction) {
+        touchDistance = 0;
+        touchDirection = direction;
+      }
+
+      // Keep the complete vertical intent of the gesture. On touch devices the
+      // section boundary is often reached only during the last move event. If
+      // we started counting there, a second swipe would be required.
+      touchDistance += Math.abs(deltaY);
+
+      const currentIndex = activeSectionIndex;
+      const targetIndex = currentIndex + direction;
+      const currentSection = sections[currentIndex];
+
+      if (!currentSection || targetIndex < 0 || targetIndex >= sections.length || !isAtBoundary(currentSection, direction)) {
+        return;
+      }
+
+      event.preventDefault();
+      if (touchDistance >= touchThreshold()) moveToSection(targetIndex);
+    };
+
+    const handleTouchEnd = (event: TouchEvent) => {
+      activeTouchCount = event.touches.length;
+
+      if (isScrollLocked()) {
+        resetTouchIntent();
+        if (activeTouchCount > 0) return;
+
+        lockedUntil = Math.max(lockedUntil, performance.now() + touchMomentumSettle);
+        window.clearTimeout(unlockTimer);
+        unlockTimer = window.setTimeout(attemptUnlockScroll, touchMomentumSettle);
+        return;
+      }
+
+      if (activeTouchCount > 0 || event.type === "touchcancel") {
+        resetTouchIntent();
+        return;
+      }
+
+      const direction = touchDirection;
+      const distance = touchDistance;
+      resetTouchIntent();
+
+      if (direction === 0 || distance < touchThreshold()) return;
+
+      // Safari can apply the final part of a swipe only after touchend. Check
+      // once more on the next painted frame and convert that boundary crossing
+      // into the same controlled transition used by wheel and navigation.
+      window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(() => {
+          if (isScrollLocked()) return;
+
+          const currentIndex = activeSectionIndex;
+          const targetIndex = currentIndex + direction;
+          const currentSection = sections[currentIndex];
+          if (
+            !currentSection ||
+            targetIndex < 0 ||
+            targetIndex >= sections.length ||
+            !isAtBoundary(currentSection, direction)
+          ) return;
+
+          moveToSection(targetIndex);
+        });
+      });
+    };
+
+    const handleSectionChangeRequest = (event: Event) => {
+      const sectionId = (event as CustomEvent<{ sectionId?: string }>).detail?.sectionId;
+      const targetIndex = sections.findIndex((section) => section.id === sectionId);
+      if (targetIndex < 0) return;
+      moveToSection(targetIndex);
+    };
+
+    window.addEventListener("wheel", handleWheel, { passive: false });
+    window.addEventListener("touchstart", handleTouchStart, { passive: true });
+    window.addEventListener("touchmove", handleTouchMove, { passive: false, capture: true });
+    window.addEventListener("touchend", handleTouchEnd, { passive: true });
+    window.addEventListener("touchcancel", handleTouchEnd, { passive: true });
+    window.addEventListener("martini:section-change-request", handleSectionChangeRequest);
+  }
+</script>

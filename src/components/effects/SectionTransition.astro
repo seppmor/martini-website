@@ -1,0 +1,123 @@
+<div class="section-transition-overlay" aria-hidden="true">
+  <p class="section-transition-title"></p>
+</div>
+
+<script>
+  const sections = Array.from(document.querySelectorAll<HTMLElement>("[data-section-nav]"));
+  const overlay = document.querySelector<HTMLElement>(".section-transition-overlay");
+  const title = overlay?.querySelector<HTMLElement>(".section-transition-title");
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const labels = new Map(
+    Array.from(document.querySelectorAll<HTMLAnchorElement>(".timeline-link")).map((link) => [
+      link.hash.slice(1),
+      link.querySelector<HTMLElement>(".timeline-label")?.textContent?.trim() ?? "",
+    ]),
+  );
+
+  let transitioningSection: HTMLElement | undefined;
+  let overlayAnimation: Animation | undefined;
+  let titleAnimation: Animation | undefined;
+  let revealTimer = 0;
+
+  const revealSection = (section: HTMLElement | undefined) => section?.classList.add("is-revealed");
+  const revealOnlySection = (section: HTMLElement | undefined) => {
+    if (!section) return;
+    sections.forEach((currentSection) => {
+      currentSection.classList.toggle("is-revealed", currentSection === section);
+    });
+  };
+
+  const finishCurrentTransition = () => {
+    window.clearTimeout(revealTimer);
+    revealOnlySection(transitioningSection);
+    transitioningSection = undefined;
+    overlayAnimation?.cancel();
+    titleAnimation?.cancel();
+    overlayAnimation = undefined;
+    titleAnimation = undefined;
+    overlay?.classList.remove("is-active");
+  };
+
+  const playTransition = (section: HTMLElement) => {
+    if (!overlay || !title) {
+      revealSection(section);
+      return;
+    }
+
+    finishCurrentTransition();
+    transitioningSection = section;
+    section.classList.remove("is-revealed");
+    title.textContent = labels.get(section.id) || section.id;
+    overlay.classList.add("is-active");
+
+    overlayAnimation = overlay.animate(
+      [
+        { opacity: 0, backdropFilter: "blur(0px)", backgroundColor: "rgba(247, 237, 221, 0)" },
+        { opacity: 1, backdropFilter: "blur(11px)", backgroundColor: "rgba(247, 237, 221, 0.22)", offset: 0.0526 },
+        { opacity: 1, backdropFilter: "blur(11px)", backgroundColor: "rgba(247, 237, 221, 0.22)", offset: 0.9474 },
+        { opacity: 0, backdropFilter: "blur(0px)", backgroundColor: "rgba(247, 237, 221, 0)" },
+      ],
+      { duration: 950, easing: "linear", fill: "both" },
+    );
+
+    titleAnimation = title.animate(
+      [
+        { opacity: 0, filter: "blur(14px)", transform: "translateY(14px) scale(0.94)" },
+        { opacity: 0, filter: "blur(12px)", transform: "translateY(10px) scale(0.96)", offset: 0.12 },
+        { opacity: 1, filter: "blur(0px)", transform: "translateY(0) scale(1)", offset: 0.22 },
+        { opacity: 1, filter: "blur(0px)", transform: "translateY(0) scale(1)", offset: 0.9474 },
+        { opacity: 0, filter: "blur(14px)", transform: "translateY(-12px) scale(1.04)" },
+      ],
+      { duration: 950, easing: "linear", fill: "both" },
+    );
+
+    revealTimer = window.setTimeout(() => {
+      if (transitioningSection === section) revealSection(section);
+    }, 850);
+
+    overlayAnimation.addEventListener("finish", () => {
+      if (transitioningSection !== section) return;
+      window.clearTimeout(revealTimer);
+      revealOnlySection(section);
+      transitioningSection = undefined;
+      overlay.classList.remove("is-active");
+      overlayAnimation?.cancel();
+      titleAnimation?.cancel();
+      overlayAnimation = undefined;
+      titleAnimation = undefined;
+    });
+  };
+
+  const handleTransitionStart = (event: Event) => {
+    const sectionId = (event as CustomEvent<{ sectionId?: string }>).detail?.sectionId;
+    const section = sections.find((candidate) => candidate.id === sectionId);
+    if (!section || section === transitioningSection) return;
+
+    if (reduceMotion.matches) {
+      revealOnlySection(section);
+      return;
+    }
+    playTransition(section);
+  };
+
+  window.addEventListener("martini:section-transition-start", handleTransitionStart);
+
+  if (reduceMotion.matches) {
+    sections.forEach(revealSection);
+  } else if ("IntersectionObserver" in window) {
+    // This observer is deliberately only a visibility fallback. The scroll
+    // gate remains responsible for snapping, locking and the title transition.
+    // Should a browser's native touch momentum cross a boundary first, users
+    // still see the section instead of an empty page.
+    const revealObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) revealSection(entry.target as HTMLElement);
+        });
+      },
+      { rootMargin: "12% 0px", threshold: 0.01 },
+    );
+
+    sections.forEach((section) => revealObserver.observe(section));
+  }
+</script>

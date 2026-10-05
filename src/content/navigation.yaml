@@ -1,0 +1,21 @@
+main:
+  ariaLabel: Abschnittsnavigation
+  items:
+    - id: start
+      label: Start
+      ariaLabel: Zum Start
+    - id: wann-und-wo
+      label: Wann und Wo?
+      ariaLabel: Zu Wann und Wo?
+    - id: ablauf
+      label: Ablauf
+      ariaLabel: Zum Ablauf
+    - id: anreise-und-unterkunft
+      label: Anreise
+      ariaLabel: Zu Anreise und Unterkunft
+    - id: dresscode
+      label: Dresscode
+      ariaLabel: Zum Dresscode
+    - id: faq
+      label: FAQ
+      ariaLabel: Zu FAQ

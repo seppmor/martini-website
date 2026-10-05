@@ -1,0 +1,18 @@
+main:
+  date: "2027-07-17"
+  displayDate: "17.07.2027"
+  longDate: Samstag, 17. Juli 2027
+  countdownTarget: "2027-07-17T14:00:00+02:00"
+  countdownLabel: "17.07.2027 um 14:00 Uhr"
+  ceremony:
+    city: Mettmann
+    address: "Johannes-Flintrop-Straße 72, 40822 Mettmann"
+    arrival: "13:30"
+    start: "14:00"
+    mapUrl: "https://www.google.com/maps/search/?api=1&query=Johannes-Flintrop-Strasse%2072%2C%2040822%20Mettmann"
+  celebration:
+    name: Wasserschloss Hackhausen
+    city: Solingen
+    address: "Hackhausen 1, 42697 Solingen"
+    start: "16:30"
+    mapUrl: "https://www.google.com/maps/search/?api=1&query=Wasserschloss%20Hackhausen%2C%20Hackhausen%201%2C%2042697%20Solingen"

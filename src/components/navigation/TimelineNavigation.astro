@@ -1,0 +1,137 @@
+---
+import type { CollectionEntry } from "astro:content";
+
+interface Props {
+  content: CollectionEntry<"navigation">["data"];
+  easterEggAriaLabel: string;
+}
+
+const { content, easterEggAriaLabel } = Astro.props;
+---
+
+<nav class="timeline-nav" aria-label={content.ariaLabel} style={`--timeline-item-count: ${content.items.length}`}>
+  {
+    content.items.map((item, index) => (
+      <a
+        class:list={["timeline-link", { "is-active": index === 0 }]}
+        href={`#${item.id}`}
+        aria-label={item.ariaLabel}
+        aria-current={index === 0 ? "true" : undefined}
+      >
+        <span class="timeline-dot" aria-hidden="true"></span>
+        <span class="timeline-label">{item.label}</span>
+      </a>
+    ))
+  }
+  <button
+    class="timeline-footer-mark"
+    type="button"
+    aria-label={easterEggAriaLabel}
+    data-easter-egg-trigger
+  ></button>
+</nav>
+
+<script>
+  const links = document.querySelectorAll<HTMLAnchorElement>(".timeline-link");
+  const sections = document.querySelectorAll<HTMLElement>("[data-section-nav]");
+  const navigation = document.querySelector<HTMLElement>(".timeline-nav");
+  const mobileNavigation = window.matchMedia("(max-width: 820px)");
+  let activeSectionId = document.querySelector<HTMLAnchorElement>(".timeline-link.is-active")?.hash.slice(1) ?? "";
+  let hideNavigationTimer = 0;
+  let pulseTimer = 0;
+  let activeUpdateFrame = 0;
+
+  const showMobileNavigation = (duration = 3000) => {
+    if (!navigation || !mobileNavigation.matches) return;
+    navigation.classList.add("is-scroll-visible");
+    window.clearTimeout(hideNavigationTimer);
+    hideNavigationTimer = window.setTimeout(() => {
+      if (!navigation.matches(":focus-within")) navigation.classList.remove("is-scroll-visible");
+    }, duration);
+  };
+
+  const pulseActiveLink = (link: HTMLAnchorElement) => {
+    link.classList.remove("is-section-pulse");
+    void link.offsetWidth;
+    link.classList.add("is-section-pulse");
+    window.clearTimeout(pulseTimer);
+    pulseTimer = window.setTimeout(() => link.classList.remove("is-section-pulse"), 1200);
+  };
+
+  const setActiveLink = (sectionId: string) => {
+    let activeLink: HTMLAnchorElement | undefined;
+    links.forEach((link) => {
+      const isActive = link.getAttribute("href") === `#${sectionId}`;
+      link.classList.toggle("is-active", isActive);
+      if (isActive) activeLink = link;
+      if (isActive) link.setAttribute("aria-current", "true");
+      else link.removeAttribute("aria-current");
+    });
+
+    if (sectionId !== activeSectionId && activeLink && mobileNavigation.matches) {
+      showMobileNavigation(3000);
+      pulseActiveLink(activeLink);
+    }
+    activeSectionId = sectionId;
+  };
+
+  links.forEach((link) => {
+    link.addEventListener("click", (event) => {
+      const targetId = link.hash.slice(1);
+      const target = document.getElementById(targetId);
+      if (!target) return;
+
+      event.preventDefault();
+      setActiveLink(targetId);
+      window.dispatchEvent(
+        new CustomEvent("martini:section-change-request", {
+          detail: { sectionId: targetId },
+        }),
+      );
+    });
+  });
+
+  const sectionAtAnchor = () => {
+    const anchor = window.innerHeight * 0.18;
+    const containingSection = Array.from(sections).find((section) => {
+      const bounds = section.getBoundingClientRect();
+      return bounds.top <= anchor && bounds.bottom > anchor;
+    });
+
+    if (containingSection) return containingSection;
+
+    return Array.from(sections).sort((a, b) => {
+      const distanceToAnchor = (section: HTMLElement) => {
+        const bounds = section.getBoundingClientRect();
+        if (bounds.bottom < anchor) return anchor - bounds.bottom;
+        if (bounds.top > anchor) return bounds.top - anchor;
+        return 0;
+      };
+      return distanceToAnchor(a) - distanceToAnchor(b);
+    })[0];
+  };
+
+  const updateActiveSection = () => {
+    activeUpdateFrame = 0;
+    const activeSection = sectionAtAnchor();
+    if (activeSection) setActiveLink(activeSection.id);
+  };
+
+  const scheduleActiveUpdate = () => {
+    if (activeUpdateFrame) return;
+    activeUpdateFrame = window.requestAnimationFrame(updateActiveSection);
+  };
+
+  const handleScrollIntent = () => {
+    showMobileNavigation();
+    scheduleActiveUpdate();
+  };
+
+  scheduleActiveUpdate();
+  window.addEventListener("scroll", handleScrollIntent, { passive: true });
+  window.addEventListener("wheel", handleScrollIntent, { passive: true });
+  window.addEventListener("touchmove", handleScrollIntent, { passive: true });
+  window.addEventListener("resize", scheduleActiveUpdate, { passive: true });
+  navigation?.addEventListener("focusin", () => showMobileNavigation(3000));
+  navigation?.addEventListener("focusout", () => showMobileNavigation(700));
+</script>

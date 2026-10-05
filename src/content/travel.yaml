@@ -1,0 +1,14 @@
+main:
+  kicker: 03 / Anreise und Unterkunft
+  title: Erst die Route, später die Details.
+  intro: >-
+    Die Routen zur Trauung in Mettmann und zur Feier im Wasserschloss sind
+    bereits verlinkt. Hinweise zu Parken, ÖPNV und möglichen Übernachtungen
+    ergänzen wir hier.
+  cards:
+    - label: Route
+      text: Google-Maps-Links für beide Orte findet Ihr im Bereich „Wann und Wo?“.
+    - label: Parken
+      text: Konkrete Hinweise folgen, sobald sie abgestimmt sind.
+    - label: Unterkunft
+      text: Empfehlungen für Gäste sammeln wir in einem nächsten Schritt.

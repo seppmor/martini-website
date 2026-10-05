@@ -1,0 +1,20 @@
+main:
+  triggerAriaLabel: Geheime Galerie durch Doppeltippen öffnen
+  eyebrow: Ein geheimer Toast
+  title: Cheers auf uns.
+  intro: Ein paar Martini-Momente nur für besonders neugierige Gäste.
+  galleryAriaLabel: Geheime Bildergalerie
+  closeLabel: Geheime Galerie schließen
+  images:
+    - src: /og.jpg
+      alt: Einladung zur Martini Era
+      caption: Der Anfang unserer Martini Era
+    - src: /assets/couple-line-portrait.png
+      alt: Illustriertes Hochzeitspaar
+      caption: Zwei Drinks, ein großes Ja
+    - src: /assets/villa-johannes-flintrop-strasse-72.jpg
+      alt: Villa an der Johannes-Flintrop-Straße in Mettmann
+      caption: Hier sagen wir Ja
+    - src: "https://commons.wikimedia.org/wiki/Special:FilePath/Schloss_Hackhausen_(Solingen).jpg?width=1200"
+      alt: Wasserschloss Hackhausen in Solingen
+      caption: Hier wird angestoßen

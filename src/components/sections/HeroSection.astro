@@ -1,0 +1,119 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { Image } from "astro:assets";
+import portrait from "../../assets/couple-line-portrait-transparent.png";
+
+interface Props {
+  content: CollectionEntry<"hero">["data"];
+  event: CollectionEntry<"event">["data"];
+}
+
+const { content, event } = Astro.props;
+---
+
+<section class="hero snap-section" id="start" data-section-nav>
+  <div class="hero-brand" aria-hidden="true">
+    <span class="brand-glass"></span>
+    <span>{content.title}</span>
+  </div>
+  <div class="martini-mark" aria-hidden="true">
+    <div class="olive"></div>
+  </div>
+
+  <div class="hero-grid">
+    <div class="hero-copy">
+      <p class="eyebrow">{content.eyebrow}</p>
+      <p class="subline">{content.subline}</p>
+      <h1 id="page-title">{content.title}</h1>
+      <div class="divider" aria-hidden="true"></div>
+      <p class="intro">{content.intro}</p>
+
+      <div class="hero-actions" aria-label={content.quickLinksLabel}>
+        <a
+          href="/assets/martini-era-kalenderblocker.ics"
+          download
+          aria-label={content.calendarAriaLabel}
+        >
+          {content.calendarButton}
+        </a>
+      </div>
+    </div>
+
+    <aside class="hero-visual" aria-label={content.visualAriaLabel}>
+      <figure class="portrait-panel">
+        <Image
+          src={portrait}
+          alt={content.portraitAlt}
+          loading="eager"
+          decoding="async"
+          widths={[320, 480, 640, 928]}
+          sizes="(max-width: 820px) 72vw, 38vw"
+          format="webp"
+          quality={86}
+        />
+      </figure>
+
+      <div
+        class="countdown"
+        data-event-date={event.countdownTarget}
+        data-event-label={event.countdownLabel}
+        aria-live="polite"
+      >
+        <p class="countdown-label">{content.countdownText}</p>
+        <div class="countdown-grid" aria-label={content.countdownAriaLabel}>
+          <span><strong data-countdown-days>--</strong> {content.countdownUnits.days}</span>
+          <span><strong data-countdown-hours>--</strong> {content.countdownUnits.hours}</span>
+          <span><strong data-countdown-minutes>--</strong> {content.countdownUnits.minutes}</span>
+          <span><strong data-countdown-seconds>--</strong> {content.countdownUnits.seconds}</span>
+        </div>
+        <div class="countdown-flourish" aria-hidden="true">
+          <span class="countdown-leaf countdown-leaf-left"></span>
+          <span class="countdown-heart"></span>
+          <span class="countdown-leaf countdown-leaf-right"></span>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <div class="event-ledger" aria-label={content.factsAriaLabel}>
+    <span data-icon="calendar">{event.displayDate}</span>
+    <span data-icon="pin">{content.ledger.location[0]}<br />{content.ledger.location[1]}</span>
+    <span data-icon="dress">{content.ledger.dresscode[0]}<br />{content.ledger.dresscode[1]}</span>
+    <span data-icon="heart">
+      <strong class="ledger-pleasure">{content.ledger.closing[0]}<br />{content.ledger.closing[1]}</strong>
+    </span>
+  </div>
+  <div class="floral floral-left" aria-hidden="true"></div>
+  <div class="floral floral-right" aria-hidden="true"></div>
+</section>
+
+<script>
+  const countdown = document.querySelector<HTMLElement>(".countdown");
+
+  const formatNumber = (value: number) => String(value).padStart(2, "0");
+
+  const updateCountdown = () => {
+    if (!countdown?.dataset.eventDate) return;
+
+    const eventDate = new Date(countdown.dataset.eventDate);
+    if (Number.isNaN(eventDate.getTime())) return;
+
+    const remainingMilliseconds = eventDate.getTime() - Date.now();
+    const totalSeconds = Math.max(0, Math.floor(remainingMilliseconds / 1000));
+    const totalMinutes = Math.floor(totalSeconds / 60);
+    const values = {
+      days: String(Math.floor(totalMinutes / 1440)),
+      hours: formatNumber(Math.floor((totalMinutes % 1440) / 60)),
+      minutes: formatNumber(totalMinutes % 60),
+      seconds: formatNumber(totalSeconds % 60),
+    };
+
+    for (const [unit, value] of Object.entries(values)) {
+      const element = countdown.querySelector(`[data-countdown-${unit}]`);
+      if (element) element.textContent = value;
+    }
+  };
+
+  updateCountdown();
+  window.setInterval(updateCountdown, 1000);
+</script>

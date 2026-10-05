@@ -1,0 +1,25 @@
+---
+import type { CollectionEntry } from "astro:content";
+import SectionHeading from "../ui/SectionHeading.astro";
+
+interface Props {
+  content: CollectionEntry<"travel">["data"];
+}
+
+const { content } = Astro.props;
+---
+
+<section class="section-shell snap-section" id="anreise-und-unterkunft" data-section-nav>
+  <div class="section-silhouette" aria-hidden="true"></div>
+  <SectionHeading kicker={content.kicker} title={content.title} intro={content.intro} />
+  <div class="info-grid">
+    {
+      content.cards.map((card) => (
+        <article>
+          <span>{card.label}</span>
+          <p>{card.text}</p>
+        </article>
+      ))
+    }
+  </div>
+</section>

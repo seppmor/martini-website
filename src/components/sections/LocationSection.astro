@@ -1,0 +1,102 @@
+---
+import type { CollectionEntry } from "astro:content";
+import SectionHeading from "../ui/SectionHeading.astro";
+
+interface Props {
+  content: CollectionEntry<"locations">["data"];
+  event: CollectionEntry<"event">["data"];
+}
+
+const { content, event } = Astro.props;
+const placeholder = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
+---
+
+<section class="section-shell snap-section" id="wann-und-wo" data-section-nav>
+  <div class="section-silhouette" aria-hidden="true"></div>
+  <SectionHeading kicker={content.kicker} title={content.title} intro={content.intro} />
+  <p class="timing-note"><strong>{content.noteLabel}</strong> {content.note}</p>
+
+  <div class="event-location">
+    <div class="event-facts" aria-label="Termin und Ort">
+      <p>
+        <span>{content.ceremonyLabel}</span>
+        ca. {event.ceremony.arrival} Uhr Ankunft der Gäste<br />
+        ca. {event.ceremony.start} Uhr Trauung<br />
+        {event.ceremony.address}
+      </p>
+      <p>
+        <span>{content.celebrationLabel}</span>
+        {event.longDate}<br />
+        ab ca. {event.celebration.start} Uhr<br />
+        {event.celebration.name}<br />
+        {event.celebration.address}
+      </p>
+    </div>
+
+    <div class="location-copy">
+      <p>{content.orientationText}</p>
+      <div class="location-actions" aria-label="Routenlinks">
+        <a class="map-link" href={event.ceremony.mapUrl} target="_blank" rel="noreferrer">
+          {content.ceremonyRouteLabel}
+        </a>
+        <a class="map-link" href={event.celebration.mapUrl} target="_blank" rel="noreferrer">
+          {content.celebrationRouteLabel}
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="location-gallery" aria-label={content.galleryLabel}>
+    {
+      content.gallery.map((image) => (
+        <figure>
+          <img
+            src={placeholder}
+            data-lazy-src={image.src}
+            alt={image.alt}
+            loading="lazy"
+            decoding="async"
+          />
+          <figcaption>{image.caption}</figcaption>
+        </figure>
+      ))
+    }
+  </div>
+
+  <div class="map-card">
+    <iframe
+      title={content.mapTitle}
+      data-lazy-src={content.mapUrl}
+      loading="lazy"
+      referrerpolicy="no-referrer-when-downgrade"
+      allowfullscreen
+    ></iframe>
+  </div>
+</section>
+
+<script>
+  const lazyElements = document.querySelectorAll<HTMLElement>("[data-lazy-src]");
+
+  const loadElement = (element: HTMLElement) => {
+    const source = element.dataset.lazySrc;
+    if (!source) return;
+    element.setAttribute("src", source);
+    element.removeAttribute("data-lazy-src");
+  };
+
+  if ("IntersectionObserver" in window) {
+    const observer = new IntersectionObserver(
+      (entries, currentObserver) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          loadElement(entry.target as HTMLElement);
+          currentObserver.unobserve(entry.target);
+        });
+      },
+      { rootMargin: "360px 0px" },
+    );
+    lazyElements.forEach((element) => observer.observe(element));
+  } else {
+    lazyElements.forEach(loadElement);
+  }
+</script>
