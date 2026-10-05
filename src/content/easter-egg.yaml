@@ -12,6 +12,9 @@ main:
     - src: /assets/easter-egg/erster-gemeinsamer-urlaub.jpg
       alt: Luca und Caro bei ihrem ersten gemeinsamen Urlaub
       caption: Unser erster gemeinsamer Urlaub
+    - src: /assets/easter-egg/der-antrag-2025-09-12.jpg
+      alt: Luca und Caro unmittelbar nach dem Heiratsantrag
+      caption: 12.09.2025 – Der Antrag
     - src: /og.jpg
       alt: Einladung zur Martini Era
       caption: Der Anfang unserer Martini Era
