@@ -1323,6 +1323,13 @@ h1 {
   html,
   body {
     scroll-padding: 16px 0;
+  }
+
+  html {
+    scroll-snap-type: y mandatory;
+  }
+
+  body {
     scroll-snap-type: none;
   }
 

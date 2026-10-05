@@ -3,7 +3,10 @@
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const mobileViewport = window.matchMedia("(max-width: 820px)");
 
-  if (sections.length > 1) {
+  // Desktop wheel input benefits from the explicit resistance below. Real
+  // mobile Safari uses native scroll snapping instead; cancelling a touch
+  // gesture after momentum has started causes visible jumps on iOS.
+  if (sections.length > 1 && !mobileViewport.matches) {
     const boundaryTolerance = mobileViewport.matches ? 16 : 120;
     const wheelThreshold = 360;
     const wheelIdleReset = 800;
