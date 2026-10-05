@@ -12,6 +12,9 @@ main:
     - src: /assets/easter-egg/erster-gemeinsamer-urlaub.jpg
       alt: Luca und Caro bei ihrem ersten gemeinsamen Urlaub
       caption: Unser erster gemeinsamer Urlaub
+    - src: /assets/easter-egg/erstes-gemeinsames-bauprojekt.jpg
+      alt: Luca und Caro neben ihrem gemeinsam gebauten Schneemann
+      caption: Unser erstes gemeinsames Bauprojekt
     - src: /assets/easter-egg/erster-urlaub-familie-plescher.jpg
       alt: Luca trägt Caro im Urlaub mit Familie Plescher am Strand auf den Schultern
       caption: Unser erster gemeinsamer Urlaub mit Familie Plescher
@@ -21,9 +24,6 @@ main:
     - src: /assets/easter-egg/der-antrag-2025-09-12.jpg
       alt: Luca und Caro unmittelbar nach dem Heiratsantrag
       caption: 12.09.2025 – Der Antrag
-    - src: /assets/easter-egg/erstes-gemeinsames-bauprojekt.jpg
-      alt: Luca und Caro neben ihrem gemeinsam gebauten Schneemann
-      caption: Unser erstes gemeinsames Bauprojekt
     - src: /og.jpg
       alt: Einladung zur Martini Era
       caption: Der Anfang unserer Martini Era
