@@ -21,6 +21,9 @@ main:
     - src: /assets/easter-egg/erster-urlaub-familie-martin.jpg
       alt: Luca und Caro im Urlaub mit Familie Martin bei Sonnenuntergang auf einem Boot
       caption: Unser erster gemeinsamer Urlaub mit Familie Martin
+    - src: /assets/easter-egg/erste-gemeinsame-wohnung.jpg
+      alt: Luca und Caro stoßen in ihrer ersten gemeinsamen Wohnung miteinander an
+      caption: Unsere erste gemeinsame Wohnung
     - src: /assets/easter-egg/der-antrag-2025-09-12.jpg
       alt: Luca und Caro unmittelbar nach dem Heiratsantrag
       caption: 12.09.2025 – Der Antrag
