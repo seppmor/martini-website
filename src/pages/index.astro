@@ -70,6 +70,10 @@ const visibleNavigation = {
       {enabledSections["anreise-und-unterkunft"] && <TravelSection content={travel.data} />}
       {enabledSections.dresscode && <DresscodeSection content={dresscode.data} />}
       {enabledSections.faq && <FaqSection content={faq.data} />}
+      <footer class="easter-egg-hint">
+        <span aria-hidden="true"></span>
+        <p>{easterEgg.data.hint}</p>
+      </footer>
     </main>
   </div>
 </BaseLayout>

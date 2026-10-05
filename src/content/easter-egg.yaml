@@ -3,6 +3,7 @@ main:
   eyebrow: Ein geheimer Toast
   title: Cheers auf uns.
   intro: Ein paar Martini-Momente nur für besonders neugierige Gäste.
+  hint: Viel Spaß bei der Suche nach dem Easter Egg.
   galleryAriaLabel: Geheime Bildergalerie
   closeLabel: Geheime Galerie schließen
   images:

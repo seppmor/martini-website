@@ -86,6 +86,7 @@ const easterEgg = defineCollection({
     eyebrow: z.string(),
     title: z.string(),
     intro: z.string(),
+    hint: z.string(),
     galleryAriaLabel: z.string(),
     closeLabel: z.string(),
     images: z.array(
